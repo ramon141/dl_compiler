@@ -1,0 +1,11 @@
+programa soma inicio
+    inteiro a;
+    inteiro b;
+    inteiro c;
+
+    a = 5;
+    b = 123.4567;
+    c = a + b;
+    //ramon
+    escreva(c);
+fim.
