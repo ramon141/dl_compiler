@@ -1,6 +1,6 @@
 package lexer;
 
-public class Tokens {
+public class Dictionary {
 
   public static final Token[] TOKENS = {
       new Token(Tag.ASSIGN, "="),

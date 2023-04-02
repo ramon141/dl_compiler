@@ -103,12 +103,12 @@ public class Lexer {
 
     private Token skipCharAndGetTokenByLexem(char lexem) {
         nextChar();
-        return Tokens.getTokenByLexem(lexem);
+        return Dictionary.getTokenByLexem(lexem);
     }
 
     private Token skipCharAndGetTokenByLexem(String lexem) {
         nextChar();
-        return Tokens.getTokenByLexem(lexem);
+        return Dictionary.getTokenByLexem(lexem);
     }
 
     public Token nextToken() {
@@ -129,7 +129,7 @@ public class Lexer {
                 if (peek == '=') {
                     return skipCharAndGetTokenByLexem("<=");
                 }
-                return Tokens.getTokenByLexem("<");
+                return Dictionary.getTokenByLexem("<");
 
             case '/':
                 nextChar();
