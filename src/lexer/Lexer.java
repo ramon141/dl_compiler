@@ -34,9 +34,8 @@ public class Lexer {
     }
 
     public char nextChar() {
-        if (Character.isSpaceChar(EOF_CHAR))
-            if (peek == '\n' || peek == '\r')
-                line++;
+        if (peek == '\n' || peek == '\r')
+            line++;
 
         try {
             peek = (char) reader.read();
@@ -72,6 +71,46 @@ public class Lexer {
         return new Token(Tag.DIV, "/");
     }
 
+    private Token getTokenNumeric() {
+        boolean isFloat = false;
+        StringBuilder builder = new StringBuilder();
+
+        while (Character.isDigit(peek) || peek == '.') {
+            if (!isFloat)
+                isFloat = peek == '.';
+            builder.append(peek);
+            nextChar();
+        }
+
+        return new Token(isFloat ? Tag.LIT_REAL : Tag.LIT_INT, builder.toString());
+    }
+
+    private Token getTokenId() {
+        StringBuilder builder = new StringBuilder(peek);
+        while (Character.isJavaIdentifierPart(peek)) {
+            builder.append(peek);
+            nextChar();
+        }
+
+        String id = builder.toString();
+        Tag tag = keywords.get(id);
+        if (tag != null) {
+            return new Token(tag, id);
+        }
+
+        return new Token(Tag.ID, id);
+    }
+
+    private Token skipCharAndGetTokenByLexem(char lexem) {
+        nextChar();
+        return Tokens.getTokenByLexem(lexem);
+    }
+
+    private Token skipCharAndGetTokenByLexem(String lexem) {
+        nextChar();
+        return Tokens.getTokenByLexem(lexem);
+    }
+
     public Token nextToken() {
         while (Character.isWhitespace(peek))
             nextChar();
@@ -83,49 +122,29 @@ public class Lexer {
             case '*':
             case '|':
             case '>':
-                nextChar();
-                return Tokens.getTokenByLexem(peek);
+                return skipCharAndGetTokenByLexem(peek);
+
             case '<':
                 nextChar();
                 if (peek == '=') {
-                    nextChar();
-                    return Tokens.getTokenByLexem("<=");
+                    return skipCharAndGetTokenByLexem("<=");
                 }
                 return Tokens.getTokenByLexem("<");
+
             case '/':
                 nextChar();
                 return getTokenIgnoringComments();
+
             case EOF_CHAR:
-                nextChar();
-                return new Token(Tag.EOF, "");
+                return skipCharAndGetTokenByLexem("");
+
             default:
                 if (Character.isDigit(peek)) {
-                    boolean isFloat = false;
-                    StringBuilder builder = new StringBuilder();
-                    while (Character.isDigit(peek) || peek == '.') {
-                        if (!isFloat)
-                            isFloat = peek == '.';
-                        builder.append(peek);
-                        nextChar();
-                    }
-
-                    return new Token(isFloat ? Tag.LIT_REAL : Tag.LIT_INT, builder.toString());
+                    return getTokenNumeric();
                 }
 
                 if (Character.isJavaIdentifierStart(peek)) {
-                    StringBuilder builder = new StringBuilder(peek);
-                    while (Character.isJavaIdentifierPart(peek)) {
-                        builder.append(peek);
-                        nextChar();
-                    }
-
-                    String id = builder.toString();
-                    Tag tag = keywords.get(id);
-                    if (tag != null) {
-                        return new Token(tag, id);
-                    }
-
-                    return new Token(Tag.ID, id);
+                    return getTokenId();
                 }
 
         }
