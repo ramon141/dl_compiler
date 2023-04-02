@@ -6,6 +6,9 @@ programa soma inicio
     a = 5;
     b = 123.4567;
     c = a + b;
-    //ramon
+    // ramon barbosa pessoa
+    // testando um negocio
+    // aaaa
+    // bbb
     escreva(c);
 fim.

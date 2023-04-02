@@ -34,8 +34,9 @@ public class Lexer {
     }
 
     public char nextChar() {
-        if (peek == '\n' || peek == '\r')
-            line++;
+        if (Character.isSpaceChar(EOF_CHAR))
+            if (peek == '\n' || peek == '\r')
+                line++;
 
         try {
             peek = (char) reader.read();
@@ -46,49 +47,54 @@ public class Lexer {
         return peek;
     }
 
-    private static boolean isWhitespace(int c) {
-        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+    private void ignoreCommentsMultiline() {
+        char lastCharacter = ' ';
+        while (lastCharacter == '*' && peek == '/') {
+            lastCharacter = peek;
+            nextChar();
+        }
+    }
+
+    private void ignoreCommentsSingleline() {
+        while (peek != '\n' && peek != '\r')
+            nextChar();
+    }
+
+    private Token getTokenIgnoringComments() {
+        if (peek == '/') {
+            ignoreCommentsSingleline();
+            return nextToken();
+        } else if (peek == '*') {
+            ignoreCommentsMultiline();
+            return nextToken();
+        }
+
+        return new Token(Tag.DIV, "/");
     }
 
     public Token nextToken() {
-        while (isWhitespace(peek))
+        while (Character.isWhitespace(peek))
             nextChar();
 
         switch (peek) {
             case '=':
-                nextChar();
-                return new Token(Tag.ASSIGN, "=");
             case '+':
-                nextChar();
-                return new Token(Tag.SUM, "+");
             case '-':
-                nextChar();
-                return new Token(Tag.SUB, "-");
             case '*':
-                nextChar();
-                return new Token(Tag.MUL, "*");
             case '|':
+            case '>':
                 nextChar();
-                return new Token(Tag.OR, "|");
+                return Tokens.getTokenByLexem(peek);
             case '<':
                 nextChar();
                 if (peek == '=') {
                     nextChar();
-                    return new Token(Tag.LE, "<=");
+                    return Tokens.getTokenByLexem("<=");
                 }
-                return new Token(Tag.LT, "<");
-            case '>':
-                nextChar();
-                return new Token(Tag.LT, ">");
+                return Tokens.getTokenByLexem("<");
             case '/':
                 nextChar();
-                if (peek == '/') {
-                    while (peek != '\n' || peek != '\r') {
-                        nextChar();
-                    }
-                    return new Token(Tag.COMMENTS, "/");
-                }
-                return new Token(Tag.DIV, "/");
+                return getTokenIgnoringComments();
             case EOF_CHAR:
                 nextChar();
                 return new Token(Tag.EOF, "");
